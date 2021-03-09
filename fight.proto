@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-package pd;
+option go_package = ".;fight";
+
+package fight;
 
 service Fight {
     rpc ListHeros (ListHerosRequest) returns (stream Hero);
@@ -15,8 +17,8 @@ message Hero {
     string name = 1;
     uint32 age = 2;
     enum Gender {
-        MALE = 1;
-        FEMALE = 2;
+        MALE = 0;
+        FEMALE = 1;
     }
     Gender gender = 3;
 }
