@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package pd;
+
+import "google/protobuf/any.proto";
+
+service AuthService {
+    rpc Validate(ValidateRequest) returns (ValidateResponse);
+}
+
+message ValidateRequest {
+    string raw_id_token = 1;
+    repeated string claim_names = 2;
+}
+
+message ValidateResponse {
+    map<string, google.protobuf.Any> claims = 1;
+}

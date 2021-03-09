@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package pd;
+
+service Fight {
+    rpc ListHeros (ListHerosRequest) returns (stream Hero);
+}
+
+message ListHerosRequest {
+    // support: specify hero names
+    repeated string names = 1;
+}
+
+message Hero {
+    string name = 1;
+    uint32 age = 2;
+    enum Gender {
+        MALE = 1;
+        FEMALE = 2;
+    }
+    Gender gender = 3;
+}
