@@ -6,11 +6,43 @@ package fight;
 
 service Fight {
     rpc ListHeros (ListHerosRequest) returns (stream Hero);
+    rpc SelectHero (SelectHeroRequest) returns (SelectHeroResponse);
+    rpc ListBosses (ListBossesRequest) returns (stream Boss);
+    rpc Fight (stream FightRequest) returns (FightResponse);
+}
+
+message ListBossesRequest {
+}
+
+message FightRequest {
+    message Archive {}
+    message Start {
+        Hero hero = 1;
+        Boss boss = 2;
+    }
+    message Fight {}
+    oneof action {
+        Archive archive = 1;
+        Start start = 2;
+        Fight fight = 3;
+    }
+}
+
+message FightResponse {
+    message Fail {}
+    message Success {}
+    message CurrentStatus {
+        uint32 hero_hp = 1;
+        uint32 boss_hp = 2;
+    }
+    oneof action {
+        Fail fail = 1;
+        Success success = 2;
+        CurrentStatus current_status = 3;
+    }
 }
 
 message ListHerosRequest {
-    // support: specify hero names
-    repeated string names = 1;
 }
 
 message Hero {
@@ -21,4 +53,22 @@ message Hero {
         FEMALE = 1;
     }
     Gender gender = 3;
+    uint32 hp = 4;
+    int32 attack_power = 5;
+    int32 defense_power = 6;
+}
+
+message Boss {
+    string name = 1;
+    int32 attack_power = 2;
+    int32 defense_power = 3;
+    uint32 hp = 4;
+    uint32 level = 5;
+}
+
+message SelectHeroRequest {
+    string name = 1;
+}
+
+message SelectHeroResponse {
 }
