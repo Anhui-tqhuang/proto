@@ -11,8 +11,7 @@ service Fight {
     rpc Fight (stream FightRequest) returns (FightResponse);
 }
 
-message ListBossesRequest {
-}
+message ListBossesRequest {}
 
 message FightRequest {
     message Archive {}
@@ -42,8 +41,7 @@ message FightResponse {
     }
 }
 
-message ListHerosRequest {
-}
+message ListHerosRequest {}
 
 message Hero {
     string name = 1;
@@ -70,5 +68,4 @@ message SelectHeroRequest {
     string name = 1;
 }
 
-message SelectHeroResponse {
-}
+message SelectHeroResponse {}

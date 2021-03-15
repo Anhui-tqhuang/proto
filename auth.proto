@@ -4,8 +4,6 @@ option go_package = ".;auth";
 
 package auth;
 
-import "google/protobuf/any.proto";
-
 service AuthService {
     rpc Validate(ValidateRequest) returns (ValidateResponse);
 }
@@ -16,5 +14,14 @@ message ValidateRequest {
 }
 
 message ValidateResponse {
-    map<string, google.protobuf.Any> claims = 1;
+    // how about using 'Any' here?
+    map<string, Value> claims = 1;
+}
+
+message Value {
+    oneof type {
+        string str = 1;
+        int64 int_64 = 2;
+        bytes bytes = 3;
+    }
 }
