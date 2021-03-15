@@ -22,3 +22,14 @@ protobuf and grpc are two different things.
 
 [installation.md](./installation.md)
 
+## fight.proto
+
+[file](./fight.proto)
+
+![fight](./images/fight.png)
+
+## auth.proto
+
+[file](./auth.proto)
+
+![auth](./images/auth.png)
