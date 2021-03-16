@@ -4,68 +4,129 @@ option go_package = ".;fight";
 
 package fight;
 
-service Fight {
+import "google/protobuf/timestamp.proto";
+
+service FightSvc {
+    // here stream is used to trans a big mount of data.
     rpc ListHeros (ListHerosRequest) returns (stream Hero);
-    rpc SelectHero (SelectHeroRequest) returns (SelectHeroResponse);
-    rpc ListBosses (ListBossesRequest) returns (stream Boss);
-    rpc Fight (stream FightRequest) returns (FightResponse);
+    rpc LoadSession (LoadSessionRequest) returns (SessionView);
+    rpc SelectHero (SelectHeroRequest) returns (SessionView);
+    rpc Game (GameRequest) returns (GameResponse);
+
+    // here stream is used to keep the long-alive connection and get real top10
+    rpc Top10 (Top10Request) returns (stream Top10Response);
+
+    rpc Admin (stream AdminRequest) returns (stream AdminResponse);
 }
 
-message ListBossesRequest {}
-
-message FightRequest {
-    message Archive {}
-    message Start {
-        Hero hero = 1;
-        Boss boss = 2;
+message AdminRequest {
+    enum Type {
+        CREATE_HERO = 0;
+        ADJUST_HERO = 1;
     }
-    message Fight {}
-    oneof action {
-        Archive archive = 1;
-        Start start = 2;
-        Fight fight = 3;
+    repeated Hero heros = 1;
+    Type type = 2;
+}
+
+message AdminResponse {
+    repeated Hero heros = 1;
+}
+
+message Top10Request {}
+
+message Top10Response {
+    message Player {
+        string id = 1;
+        int32 score = 2;
+        int32 level = 3;
+    }
+    repeated Player players = 1;
+}
+
+enum Type {
+    FIGHT = 0;
+    ARCHIVE = 1;
+    LEVEL = 2;
+    QUIT = 3;
+}
+
+message GameRequest {
+    Type type = 1;
+    string id = 2;
+}
+
+message GameResponse {
+    Type type = 1;
+    oneof value {
+        Fight fight = 2;
+        Archive archive = 3;
+        Level level = 4;
+        Quit quit = 5;
     }
 }
 
-message FightResponse {
-    message Fail {}
-    message Success {}
-    message CurrentStatus {
-        uint32 hero_hp = 1;
-        uint32 boss_hp = 2;
-    }
-    oneof action {
-        Fail fail = 1;
-        Success success = 2;
-        CurrentStatus current_status = 3;
-    }
+message Fight {
+    bool game_over = 1;
+    bool next_level = 2;
+    int32 score = 3;
+    int32 hero_blood = 4;
+    int32 boss_blood = 5;
+}
+
+message Archive {
+    string msg = 1;
+    string session_id = 2;
+}
+
+message Level {
+    string msg = 1;
+    Session session = 2;
+}
+
+message Quit {
+    string msg = 1;
+}
+
+message SelectHeroRequest {
+    string id = 1;
+    string hero_name = 2;
+}
+
+message LoadSessionRequest {
+    string id = 1;
+}
+
+message SessionView {
+    Hero hero = 1;
+    Boss boss = 2;
+    Session session = 3;
 }
 
 message ListHerosRequest {}
 
 message Hero {
     string name = 1;
-    uint32 age = 2;
-    enum Gender {
-        MALE = 0;
-        FEMALE = 1;
-    }
-    Gender gender = 3;
-    uint32 hp = 4;
-    int32 attack_power = 5;
-    int32 defense_power = 6;
+    string details = 2;
+    int32 attack_power = 3;
+    int32 defense_power = 4;
+    int32 blood = 5;
 }
 
 message Boss {
     string name = 1;
-    int32 attack_power = 2;
-    int32 defense_power = 3;
-    uint32 hp = 4;
-    uint32 level = 5;
+    string details = 2;
+    int32 attack_power = 3;
+    int32 defense_power = 4;
+    int32 blood = 5;
+    int32 level = 6;
 }
 
-message SelectHeroRequest {
-    string name = 1;
+message Session {
+    string UID = 1;
+    string hero_name = 2;
+    int32 live_hero_blood = 3;
+    int32 live_boss_blood = 4;
+    int32 current_level = 5;
+    int32 score = 6;
+    google.protobuf.Timestamp archive_date = 7;
 }
-
-message SelectHeroResponse {}

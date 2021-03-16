@@ -7,6 +7,7 @@ import (
 	context "context"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -24,468 +25,781 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type Hero_Gender int32
+type Type int32
 
 const (
-	Hero_MALE   Hero_Gender = 0
-	Hero_FEMALE Hero_Gender = 1
+	Type_FIGHT   Type = 0
+	Type_ARCHIVE Type = 1
+	Type_LEVEL   Type = 2
+	Type_QUIT    Type = 3
 )
 
-var Hero_Gender_name = map[int32]string{
-	0: "MALE",
-	1: "FEMALE",
+var Type_name = map[int32]string{
+	0: "FIGHT",
+	1: "ARCHIVE",
+	2: "LEVEL",
+	3: "QUIT",
 }
 
-var Hero_Gender_value = map[string]int32{
-	"MALE":   0,
-	"FEMALE": 1,
+var Type_value = map[string]int32{
+	"FIGHT":   0,
+	"ARCHIVE": 1,
+	"LEVEL":   2,
+	"QUIT":    3,
 }
 
-func (x Hero_Gender) String() string {
-	return proto.EnumName(Hero_Gender_name, int32(x))
+func (x Type) String() string {
+	return proto.EnumName(Type_name, int32(x))
 }
 
-func (Hero_Gender) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_0a9b36907fd4a279, []int{4, 0}
+func (Type) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_0a9b36907fd4a279, []int{0}
 }
 
-type ListBossesRequest struct {
+type AdminRequest_Type int32
+
+const (
+	AdminRequest_CREATE_HERO AdminRequest_Type = 0
+	AdminRequest_ADJUST_HERO AdminRequest_Type = 1
+)
+
+var AdminRequest_Type_name = map[int32]string{
+	0: "CREATE_HERO",
+	1: "ADJUST_HERO",
+}
+
+var AdminRequest_Type_value = map[string]int32{
+	"CREATE_HERO": 0,
+	"ADJUST_HERO": 1,
+}
+
+func (x AdminRequest_Type) String() string {
+	return proto.EnumName(AdminRequest_Type_name, int32(x))
+}
+
+func (AdminRequest_Type) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_0a9b36907fd4a279, []int{0, 0}
+}
+
+type AdminRequest struct {
+	Heros                []*Hero           `protobuf:"bytes,1,rep,name=heros,proto3" json:"heros,omitempty"`
+	Type                 AdminRequest_Type `protobuf:"varint,2,opt,name=type,proto3,enum=fight.AdminRequest_Type" json:"type,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *AdminRequest) Reset()         { *m = AdminRequest{} }
+func (m *AdminRequest) String() string { return proto.CompactTextString(m) }
+func (*AdminRequest) ProtoMessage()    {}
+func (*AdminRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0a9b36907fd4a279, []int{0}
+}
+
+func (m *AdminRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AdminRequest.Unmarshal(m, b)
+}
+func (m *AdminRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AdminRequest.Marshal(b, m, deterministic)
+}
+func (m *AdminRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AdminRequest.Merge(m, src)
+}
+func (m *AdminRequest) XXX_Size() int {
+	return xxx_messageInfo_AdminRequest.Size(m)
+}
+func (m *AdminRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_AdminRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AdminRequest proto.InternalMessageInfo
+
+func (m *AdminRequest) GetHeros() []*Hero {
+	if m != nil {
+		return m.Heros
+	}
+	return nil
+}
+
+func (m *AdminRequest) GetType() AdminRequest_Type {
+	if m != nil {
+		return m.Type
+	}
+	return AdminRequest_CREATE_HERO
+}
+
+type AdminResponse struct {
+	Heros                []*Hero  `protobuf:"bytes,1,rep,name=heros,proto3" json:"heros,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *ListBossesRequest) Reset()         { *m = ListBossesRequest{} }
-func (m *ListBossesRequest) String() string { return proto.CompactTextString(m) }
-func (*ListBossesRequest) ProtoMessage()    {}
-func (*ListBossesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0a9b36907fd4a279, []int{0}
-}
-
-func (m *ListBossesRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ListBossesRequest.Unmarshal(m, b)
-}
-func (m *ListBossesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ListBossesRequest.Marshal(b, m, deterministic)
-}
-func (m *ListBossesRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ListBossesRequest.Merge(m, src)
-}
-func (m *ListBossesRequest) XXX_Size() int {
-	return xxx_messageInfo_ListBossesRequest.Size(m)
-}
-func (m *ListBossesRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_ListBossesRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ListBossesRequest proto.InternalMessageInfo
-
-type FightRequest struct {
-	// Types that are valid to be assigned to Action:
-	//	*FightRequest_Archive_
-	//	*FightRequest_Start_
-	//	*FightRequest_Fight_
-	Action               isFightRequest_Action `protobuf_oneof:"action"`
-	XXX_NoUnkeyedLiteral struct{}              `json:"-"`
-	XXX_unrecognized     []byte                `json:"-"`
-	XXX_sizecache        int32                 `json:"-"`
-}
-
-func (m *FightRequest) Reset()         { *m = FightRequest{} }
-func (m *FightRequest) String() string { return proto.CompactTextString(m) }
-func (*FightRequest) ProtoMessage()    {}
-func (*FightRequest) Descriptor() ([]byte, []int) {
+func (m *AdminResponse) Reset()         { *m = AdminResponse{} }
+func (m *AdminResponse) String() string { return proto.CompactTextString(m) }
+func (*AdminResponse) ProtoMessage()    {}
+func (*AdminResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_0a9b36907fd4a279, []int{1}
 }
 
-func (m *FightRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FightRequest.Unmarshal(m, b)
+func (m *AdminResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AdminResponse.Unmarshal(m, b)
 }
-func (m *FightRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FightRequest.Marshal(b, m, deterministic)
+func (m *AdminResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AdminResponse.Marshal(b, m, deterministic)
 }
-func (m *FightRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FightRequest.Merge(m, src)
+func (m *AdminResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AdminResponse.Merge(m, src)
 }
-func (m *FightRequest) XXX_Size() int {
-	return xxx_messageInfo_FightRequest.Size(m)
+func (m *AdminResponse) XXX_Size() int {
+	return xxx_messageInfo_AdminResponse.Size(m)
 }
-func (m *FightRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_FightRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_FightRequest proto.InternalMessageInfo
-
-type isFightRequest_Action interface {
-	isFightRequest_Action()
+func (m *AdminResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_AdminResponse.DiscardUnknown(m)
 }
 
-type FightRequest_Archive_ struct {
-	Archive *FightRequest_Archive `protobuf:"bytes,1,opt,name=archive,proto3,oneof"`
-}
+var xxx_messageInfo_AdminResponse proto.InternalMessageInfo
 
-type FightRequest_Start_ struct {
-	Start *FightRequest_Start `protobuf:"bytes,2,opt,name=start,proto3,oneof"`
-}
-
-type FightRequest_Fight_ struct {
-	Fight *FightRequest_Fight `protobuf:"bytes,3,opt,name=fight,proto3,oneof"`
-}
-
-func (*FightRequest_Archive_) isFightRequest_Action() {}
-
-func (*FightRequest_Start_) isFightRequest_Action() {}
-
-func (*FightRequest_Fight_) isFightRequest_Action() {}
-
-func (m *FightRequest) GetAction() isFightRequest_Action {
+func (m *AdminResponse) GetHeros() []*Hero {
 	if m != nil {
-		return m.Action
+		return m.Heros
 	}
 	return nil
 }
 
-func (m *FightRequest) GetArchive() *FightRequest_Archive {
-	if x, ok := m.GetAction().(*FightRequest_Archive_); ok {
-		return x.Archive
+type Top10Request struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Top10Request) Reset()         { *m = Top10Request{} }
+func (m *Top10Request) String() string { return proto.CompactTextString(m) }
+func (*Top10Request) ProtoMessage()    {}
+func (*Top10Request) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0a9b36907fd4a279, []int{2}
+}
+
+func (m *Top10Request) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Top10Request.Unmarshal(m, b)
+}
+func (m *Top10Request) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Top10Request.Marshal(b, m, deterministic)
+}
+func (m *Top10Request) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Top10Request.Merge(m, src)
+}
+func (m *Top10Request) XXX_Size() int {
+	return xxx_messageInfo_Top10Request.Size(m)
+}
+func (m *Top10Request) XXX_DiscardUnknown() {
+	xxx_messageInfo_Top10Request.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Top10Request proto.InternalMessageInfo
+
+type Top10Response struct {
+	Players              []*Top10Response_Player `protobuf:"bytes,1,rep,name=players,proto3" json:"players,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
+	XXX_unrecognized     []byte                  `json:"-"`
+	XXX_sizecache        int32                   `json:"-"`
+}
+
+func (m *Top10Response) Reset()         { *m = Top10Response{} }
+func (m *Top10Response) String() string { return proto.CompactTextString(m) }
+func (*Top10Response) ProtoMessage()    {}
+func (*Top10Response) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0a9b36907fd4a279, []int{3}
+}
+
+func (m *Top10Response) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Top10Response.Unmarshal(m, b)
+}
+func (m *Top10Response) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Top10Response.Marshal(b, m, deterministic)
+}
+func (m *Top10Response) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Top10Response.Merge(m, src)
+}
+func (m *Top10Response) XXX_Size() int {
+	return xxx_messageInfo_Top10Response.Size(m)
+}
+func (m *Top10Response) XXX_DiscardUnknown() {
+	xxx_messageInfo_Top10Response.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Top10Response proto.InternalMessageInfo
+
+func (m *Top10Response) GetPlayers() []*Top10Response_Player {
+	if m != nil {
+		return m.Players
 	}
 	return nil
 }
 
-func (m *FightRequest) GetStart() *FightRequest_Start {
-	if x, ok := m.GetAction().(*FightRequest_Start_); ok {
-		return x.Start
+type Top10Response_Player struct {
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Score                int32    `protobuf:"varint,2,opt,name=score,proto3" json:"score,omitempty"`
+	Level                int32    `protobuf:"varint,3,opt,name=level,proto3" json:"level,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Top10Response_Player) Reset()         { *m = Top10Response_Player{} }
+func (m *Top10Response_Player) String() string { return proto.CompactTextString(m) }
+func (*Top10Response_Player) ProtoMessage()    {}
+func (*Top10Response_Player) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0a9b36907fd4a279, []int{3, 0}
+}
+
+func (m *Top10Response_Player) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Top10Response_Player.Unmarshal(m, b)
+}
+func (m *Top10Response_Player) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Top10Response_Player.Marshal(b, m, deterministic)
+}
+func (m *Top10Response_Player) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Top10Response_Player.Merge(m, src)
+}
+func (m *Top10Response_Player) XXX_Size() int {
+	return xxx_messageInfo_Top10Response_Player.Size(m)
+}
+func (m *Top10Response_Player) XXX_DiscardUnknown() {
+	xxx_messageInfo_Top10Response_Player.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Top10Response_Player proto.InternalMessageInfo
+
+func (m *Top10Response_Player) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+func (m *Top10Response_Player) GetScore() int32 {
+	if m != nil {
+		return m.Score
+	}
+	return 0
+}
+
+func (m *Top10Response_Player) GetLevel() int32 {
+	if m != nil {
+		return m.Level
+	}
+	return 0
+}
+
+type GameRequest struct {
+	Type                 Type     `protobuf:"varint,1,opt,name=type,proto3,enum=fight.Type" json:"type,omitempty"`
+	Id                   string   `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GameRequest) Reset()         { *m = GameRequest{} }
+func (m *GameRequest) String() string { return proto.CompactTextString(m) }
+func (*GameRequest) ProtoMessage()    {}
+func (*GameRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0a9b36907fd4a279, []int{4}
+}
+
+func (m *GameRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GameRequest.Unmarshal(m, b)
+}
+func (m *GameRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GameRequest.Marshal(b, m, deterministic)
+}
+func (m *GameRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GameRequest.Merge(m, src)
+}
+func (m *GameRequest) XXX_Size() int {
+	return xxx_messageInfo_GameRequest.Size(m)
+}
+func (m *GameRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GameRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GameRequest proto.InternalMessageInfo
+
+func (m *GameRequest) GetType() Type {
+	if m != nil {
+		return m.Type
+	}
+	return Type_FIGHT
+}
+
+func (m *GameRequest) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+type GameResponse struct {
+	Type Type `protobuf:"varint,1,opt,name=type,proto3,enum=fight.Type" json:"type,omitempty"`
+	// Types that are valid to be assigned to Value:
+	//	*GameResponse_Fight
+	//	*GameResponse_Archive
+	//	*GameResponse_Level
+	//	*GameResponse_Quit
+	Value                isGameResponse_Value `protobuf_oneof:"value"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
+}
+
+func (m *GameResponse) Reset()         { *m = GameResponse{} }
+func (m *GameResponse) String() string { return proto.CompactTextString(m) }
+func (*GameResponse) ProtoMessage()    {}
+func (*GameResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0a9b36907fd4a279, []int{5}
+}
+
+func (m *GameResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GameResponse.Unmarshal(m, b)
+}
+func (m *GameResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GameResponse.Marshal(b, m, deterministic)
+}
+func (m *GameResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GameResponse.Merge(m, src)
+}
+func (m *GameResponse) XXX_Size() int {
+	return xxx_messageInfo_GameResponse.Size(m)
+}
+func (m *GameResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GameResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GameResponse proto.InternalMessageInfo
+
+func (m *GameResponse) GetType() Type {
+	if m != nil {
+		return m.Type
+	}
+	return Type_FIGHT
+}
+
+type isGameResponse_Value interface {
+	isGameResponse_Value()
+}
+
+type GameResponse_Fight struct {
+	Fight *Fight `protobuf:"bytes,2,opt,name=fight,proto3,oneof"`
+}
+
+type GameResponse_Archive struct {
+	Archive *Archive `protobuf:"bytes,3,opt,name=archive,proto3,oneof"`
+}
+
+type GameResponse_Level struct {
+	Level *Level `protobuf:"bytes,4,opt,name=level,proto3,oneof"`
+}
+
+type GameResponse_Quit struct {
+	Quit *Quit `protobuf:"bytes,5,opt,name=quit,proto3,oneof"`
+}
+
+func (*GameResponse_Fight) isGameResponse_Value() {}
+
+func (*GameResponse_Archive) isGameResponse_Value() {}
+
+func (*GameResponse_Level) isGameResponse_Value() {}
+
+func (*GameResponse_Quit) isGameResponse_Value() {}
+
+func (m *GameResponse) GetValue() isGameResponse_Value {
+	if m != nil {
+		return m.Value
 	}
 	return nil
 }
 
-func (m *FightRequest) GetFight() *FightRequest_Fight {
-	if x, ok := m.GetAction().(*FightRequest_Fight_); ok {
+func (m *GameResponse) GetFight() *Fight {
+	if x, ok := m.GetValue().(*GameResponse_Fight); ok {
 		return x.Fight
 	}
 	return nil
 }
 
+func (m *GameResponse) GetArchive() *Archive {
+	if x, ok := m.GetValue().(*GameResponse_Archive); ok {
+		return x.Archive
+	}
+	return nil
+}
+
+func (m *GameResponse) GetLevel() *Level {
+	if x, ok := m.GetValue().(*GameResponse_Level); ok {
+		return x.Level
+	}
+	return nil
+}
+
+func (m *GameResponse) GetQuit() *Quit {
+	if x, ok := m.GetValue().(*GameResponse_Quit); ok {
+		return x.Quit
+	}
+	return nil
+}
+
 // XXX_OneofWrappers is for the internal use of the proto package.
-func (*FightRequest) XXX_OneofWrappers() []interface{} {
+func (*GameResponse) XXX_OneofWrappers() []interface{} {
 	return []interface{}{
-		(*FightRequest_Archive_)(nil),
-		(*FightRequest_Start_)(nil),
-		(*FightRequest_Fight_)(nil),
+		(*GameResponse_Fight)(nil),
+		(*GameResponse_Archive)(nil),
+		(*GameResponse_Level)(nil),
+		(*GameResponse_Quit)(nil),
 	}
 }
 
-type FightRequest_Archive struct {
+type Fight struct {
+	GameOver             bool     `protobuf:"varint,1,opt,name=game_over,json=gameOver,proto3" json:"game_over,omitempty"`
+	NextLevel            bool     `protobuf:"varint,2,opt,name=next_level,json=nextLevel,proto3" json:"next_level,omitempty"`
+	Score                int32    `protobuf:"varint,3,opt,name=score,proto3" json:"score,omitempty"`
+	HeroBlood            int32    `protobuf:"varint,4,opt,name=hero_blood,json=heroBlood,proto3" json:"hero_blood,omitempty"`
+	BossBlood            int32    `protobuf:"varint,5,opt,name=boss_blood,json=bossBlood,proto3" json:"boss_blood,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *FightRequest_Archive) Reset()         { *m = FightRequest_Archive{} }
-func (m *FightRequest_Archive) String() string { return proto.CompactTextString(m) }
-func (*FightRequest_Archive) ProtoMessage()    {}
-func (*FightRequest_Archive) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0a9b36907fd4a279, []int{1, 0}
+func (m *Fight) Reset()         { *m = Fight{} }
+func (m *Fight) String() string { return proto.CompactTextString(m) }
+func (*Fight) ProtoMessage()    {}
+func (*Fight) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0a9b36907fd4a279, []int{6}
 }
 
-func (m *FightRequest_Archive) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FightRequest_Archive.Unmarshal(m, b)
+func (m *Fight) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Fight.Unmarshal(m, b)
 }
-func (m *FightRequest_Archive) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FightRequest_Archive.Marshal(b, m, deterministic)
+func (m *Fight) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Fight.Marshal(b, m, deterministic)
 }
-func (m *FightRequest_Archive) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FightRequest_Archive.Merge(m, src)
+func (m *Fight) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Fight.Merge(m, src)
 }
-func (m *FightRequest_Archive) XXX_Size() int {
-	return xxx_messageInfo_FightRequest_Archive.Size(m)
+func (m *Fight) XXX_Size() int {
+	return xxx_messageInfo_Fight.Size(m)
 }
-func (m *FightRequest_Archive) XXX_DiscardUnknown() {
-	xxx_messageInfo_FightRequest_Archive.DiscardUnknown(m)
+func (m *Fight) XXX_DiscardUnknown() {
+	xxx_messageInfo_Fight.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_FightRequest_Archive proto.InternalMessageInfo
+var xxx_messageInfo_Fight proto.InternalMessageInfo
 
-type FightRequest_Start struct {
+func (m *Fight) GetGameOver() bool {
+	if m != nil {
+		return m.GameOver
+	}
+	return false
+}
+
+func (m *Fight) GetNextLevel() bool {
+	if m != nil {
+		return m.NextLevel
+	}
+	return false
+}
+
+func (m *Fight) GetScore() int32 {
+	if m != nil {
+		return m.Score
+	}
+	return 0
+}
+
+func (m *Fight) GetHeroBlood() int32 {
+	if m != nil {
+		return m.HeroBlood
+	}
+	return 0
+}
+
+func (m *Fight) GetBossBlood() int32 {
+	if m != nil {
+		return m.BossBlood
+	}
+	return 0
+}
+
+type Archive struct {
+	Msg                  string   `protobuf:"bytes,1,opt,name=msg,proto3" json:"msg,omitempty"`
+	SessionId            string   `protobuf:"bytes,2,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Archive) Reset()         { *m = Archive{} }
+func (m *Archive) String() string { return proto.CompactTextString(m) }
+func (*Archive) ProtoMessage()    {}
+func (*Archive) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0a9b36907fd4a279, []int{7}
+}
+
+func (m *Archive) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Archive.Unmarshal(m, b)
+}
+func (m *Archive) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Archive.Marshal(b, m, deterministic)
+}
+func (m *Archive) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Archive.Merge(m, src)
+}
+func (m *Archive) XXX_Size() int {
+	return xxx_messageInfo_Archive.Size(m)
+}
+func (m *Archive) XXX_DiscardUnknown() {
+	xxx_messageInfo_Archive.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Archive proto.InternalMessageInfo
+
+func (m *Archive) GetMsg() string {
+	if m != nil {
+		return m.Msg
+	}
+	return ""
+}
+
+func (m *Archive) GetSessionId() string {
+	if m != nil {
+		return m.SessionId
+	}
+	return ""
+}
+
+type Level struct {
+	Msg                  string   `protobuf:"bytes,1,opt,name=msg,proto3" json:"msg,omitempty"`
+	Session              *Session `protobuf:"bytes,2,opt,name=session,proto3" json:"session,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Level) Reset()         { *m = Level{} }
+func (m *Level) String() string { return proto.CompactTextString(m) }
+func (*Level) ProtoMessage()    {}
+func (*Level) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0a9b36907fd4a279, []int{8}
+}
+
+func (m *Level) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Level.Unmarshal(m, b)
+}
+func (m *Level) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Level.Marshal(b, m, deterministic)
+}
+func (m *Level) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Level.Merge(m, src)
+}
+func (m *Level) XXX_Size() int {
+	return xxx_messageInfo_Level.Size(m)
+}
+func (m *Level) XXX_DiscardUnknown() {
+	xxx_messageInfo_Level.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Level proto.InternalMessageInfo
+
+func (m *Level) GetMsg() string {
+	if m != nil {
+		return m.Msg
+	}
+	return ""
+}
+
+func (m *Level) GetSession() *Session {
+	if m != nil {
+		return m.Session
+	}
+	return nil
+}
+
+type Quit struct {
+	Msg                  string   `protobuf:"bytes,1,opt,name=msg,proto3" json:"msg,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Quit) Reset()         { *m = Quit{} }
+func (m *Quit) String() string { return proto.CompactTextString(m) }
+func (*Quit) ProtoMessage()    {}
+func (*Quit) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0a9b36907fd4a279, []int{9}
+}
+
+func (m *Quit) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Quit.Unmarshal(m, b)
+}
+func (m *Quit) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Quit.Marshal(b, m, deterministic)
+}
+func (m *Quit) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Quit.Merge(m, src)
+}
+func (m *Quit) XXX_Size() int {
+	return xxx_messageInfo_Quit.Size(m)
+}
+func (m *Quit) XXX_DiscardUnknown() {
+	xxx_messageInfo_Quit.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Quit proto.InternalMessageInfo
+
+func (m *Quit) GetMsg() string {
+	if m != nil {
+		return m.Msg
+	}
+	return ""
+}
+
+type SelectHeroRequest struct {
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	HeroName             string   `protobuf:"bytes,2,opt,name=hero_name,json=heroName,proto3" json:"hero_name,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SelectHeroRequest) Reset()         { *m = SelectHeroRequest{} }
+func (m *SelectHeroRequest) String() string { return proto.CompactTextString(m) }
+func (*SelectHeroRequest) ProtoMessage()    {}
+func (*SelectHeroRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0a9b36907fd4a279, []int{10}
+}
+
+func (m *SelectHeroRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SelectHeroRequest.Unmarshal(m, b)
+}
+func (m *SelectHeroRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SelectHeroRequest.Marshal(b, m, deterministic)
+}
+func (m *SelectHeroRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SelectHeroRequest.Merge(m, src)
+}
+func (m *SelectHeroRequest) XXX_Size() int {
+	return xxx_messageInfo_SelectHeroRequest.Size(m)
+}
+func (m *SelectHeroRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_SelectHeroRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SelectHeroRequest proto.InternalMessageInfo
+
+func (m *SelectHeroRequest) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+func (m *SelectHeroRequest) GetHeroName() string {
+	if m != nil {
+		return m.HeroName
+	}
+	return ""
+}
+
+type LoadSessionRequest struct {
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *LoadSessionRequest) Reset()         { *m = LoadSessionRequest{} }
+func (m *LoadSessionRequest) String() string { return proto.CompactTextString(m) }
+func (*LoadSessionRequest) ProtoMessage()    {}
+func (*LoadSessionRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0a9b36907fd4a279, []int{11}
+}
+
+func (m *LoadSessionRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_LoadSessionRequest.Unmarshal(m, b)
+}
+func (m *LoadSessionRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_LoadSessionRequest.Marshal(b, m, deterministic)
+}
+func (m *LoadSessionRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LoadSessionRequest.Merge(m, src)
+}
+func (m *LoadSessionRequest) XXX_Size() int {
+	return xxx_messageInfo_LoadSessionRequest.Size(m)
+}
+func (m *LoadSessionRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_LoadSessionRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_LoadSessionRequest proto.InternalMessageInfo
+
+func (m *LoadSessionRequest) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+type SessionView struct {
 	Hero                 *Hero    `protobuf:"bytes,1,opt,name=hero,proto3" json:"hero,omitempty"`
 	Boss                 *Boss    `protobuf:"bytes,2,opt,name=boss,proto3" json:"boss,omitempty"`
+	Session              *Session `protobuf:"bytes,3,opt,name=session,proto3" json:"session,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *FightRequest_Start) Reset()         { *m = FightRequest_Start{} }
-func (m *FightRequest_Start) String() string { return proto.CompactTextString(m) }
-func (*FightRequest_Start) ProtoMessage()    {}
-func (*FightRequest_Start) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0a9b36907fd4a279, []int{1, 1}
+func (m *SessionView) Reset()         { *m = SessionView{} }
+func (m *SessionView) String() string { return proto.CompactTextString(m) }
+func (*SessionView) ProtoMessage()    {}
+func (*SessionView) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0a9b36907fd4a279, []int{12}
 }
 
-func (m *FightRequest_Start) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FightRequest_Start.Unmarshal(m, b)
+func (m *SessionView) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SessionView.Unmarshal(m, b)
 }
-func (m *FightRequest_Start) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FightRequest_Start.Marshal(b, m, deterministic)
+func (m *SessionView) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SessionView.Marshal(b, m, deterministic)
 }
-func (m *FightRequest_Start) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FightRequest_Start.Merge(m, src)
+func (m *SessionView) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SessionView.Merge(m, src)
 }
-func (m *FightRequest_Start) XXX_Size() int {
-	return xxx_messageInfo_FightRequest_Start.Size(m)
+func (m *SessionView) XXX_Size() int {
+	return xxx_messageInfo_SessionView.Size(m)
 }
-func (m *FightRequest_Start) XXX_DiscardUnknown() {
-	xxx_messageInfo_FightRequest_Start.DiscardUnknown(m)
+func (m *SessionView) XXX_DiscardUnknown() {
+	xxx_messageInfo_SessionView.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_FightRequest_Start proto.InternalMessageInfo
+var xxx_messageInfo_SessionView proto.InternalMessageInfo
 
-func (m *FightRequest_Start) GetHero() *Hero {
+func (m *SessionView) GetHero() *Hero {
 	if m != nil {
 		return m.Hero
 	}
 	return nil
 }
 
-func (m *FightRequest_Start) GetBoss() *Boss {
+func (m *SessionView) GetBoss() *Boss {
 	if m != nil {
 		return m.Boss
 	}
 	return nil
 }
 
-type FightRequest_Fight struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *FightRequest_Fight) Reset()         { *m = FightRequest_Fight{} }
-func (m *FightRequest_Fight) String() string { return proto.CompactTextString(m) }
-func (*FightRequest_Fight) ProtoMessage()    {}
-func (*FightRequest_Fight) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0a9b36907fd4a279, []int{1, 2}
-}
-
-func (m *FightRequest_Fight) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FightRequest_Fight.Unmarshal(m, b)
-}
-func (m *FightRequest_Fight) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FightRequest_Fight.Marshal(b, m, deterministic)
-}
-func (m *FightRequest_Fight) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FightRequest_Fight.Merge(m, src)
-}
-func (m *FightRequest_Fight) XXX_Size() int {
-	return xxx_messageInfo_FightRequest_Fight.Size(m)
-}
-func (m *FightRequest_Fight) XXX_DiscardUnknown() {
-	xxx_messageInfo_FightRequest_Fight.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_FightRequest_Fight proto.InternalMessageInfo
-
-type FightResponse struct {
-	// Types that are valid to be assigned to Action:
-	//	*FightResponse_Fail_
-	//	*FightResponse_Success_
-	//	*FightResponse_CurrentStatus_
-	Action               isFightResponse_Action `protobuf_oneof:"action"`
-	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
-	XXX_unrecognized     []byte                 `json:"-"`
-	XXX_sizecache        int32                  `json:"-"`
-}
-
-func (m *FightResponse) Reset()         { *m = FightResponse{} }
-func (m *FightResponse) String() string { return proto.CompactTextString(m) }
-func (*FightResponse) ProtoMessage()    {}
-func (*FightResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0a9b36907fd4a279, []int{2}
-}
-
-func (m *FightResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FightResponse.Unmarshal(m, b)
-}
-func (m *FightResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FightResponse.Marshal(b, m, deterministic)
-}
-func (m *FightResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FightResponse.Merge(m, src)
-}
-func (m *FightResponse) XXX_Size() int {
-	return xxx_messageInfo_FightResponse.Size(m)
-}
-func (m *FightResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_FightResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_FightResponse proto.InternalMessageInfo
-
-type isFightResponse_Action interface {
-	isFightResponse_Action()
-}
-
-type FightResponse_Fail_ struct {
-	Fail *FightResponse_Fail `protobuf:"bytes,1,opt,name=fail,proto3,oneof"`
-}
-
-type FightResponse_Success_ struct {
-	Success *FightResponse_Success `protobuf:"bytes,2,opt,name=success,proto3,oneof"`
-}
-
-type FightResponse_CurrentStatus_ struct {
-	CurrentStatus *FightResponse_CurrentStatus `protobuf:"bytes,3,opt,name=current_status,json=currentStatus,proto3,oneof"`
-}
-
-func (*FightResponse_Fail_) isFightResponse_Action() {}
-
-func (*FightResponse_Success_) isFightResponse_Action() {}
-
-func (*FightResponse_CurrentStatus_) isFightResponse_Action() {}
-
-func (m *FightResponse) GetAction() isFightResponse_Action {
+func (m *SessionView) GetSession() *Session {
 	if m != nil {
-		return m.Action
+		return m.Session
 	}
 	return nil
-}
-
-func (m *FightResponse) GetFail() *FightResponse_Fail {
-	if x, ok := m.GetAction().(*FightResponse_Fail_); ok {
-		return x.Fail
-	}
-	return nil
-}
-
-func (m *FightResponse) GetSuccess() *FightResponse_Success {
-	if x, ok := m.GetAction().(*FightResponse_Success_); ok {
-		return x.Success
-	}
-	return nil
-}
-
-func (m *FightResponse) GetCurrentStatus() *FightResponse_CurrentStatus {
-	if x, ok := m.GetAction().(*FightResponse_CurrentStatus_); ok {
-		return x.CurrentStatus
-	}
-	return nil
-}
-
-// XXX_OneofWrappers is for the internal use of the proto package.
-func (*FightResponse) XXX_OneofWrappers() []interface{} {
-	return []interface{}{
-		(*FightResponse_Fail_)(nil),
-		(*FightResponse_Success_)(nil),
-		(*FightResponse_CurrentStatus_)(nil),
-	}
-}
-
-type FightResponse_Fail struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *FightResponse_Fail) Reset()         { *m = FightResponse_Fail{} }
-func (m *FightResponse_Fail) String() string { return proto.CompactTextString(m) }
-func (*FightResponse_Fail) ProtoMessage()    {}
-func (*FightResponse_Fail) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0a9b36907fd4a279, []int{2, 0}
-}
-
-func (m *FightResponse_Fail) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FightResponse_Fail.Unmarshal(m, b)
-}
-func (m *FightResponse_Fail) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FightResponse_Fail.Marshal(b, m, deterministic)
-}
-func (m *FightResponse_Fail) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FightResponse_Fail.Merge(m, src)
-}
-func (m *FightResponse_Fail) XXX_Size() int {
-	return xxx_messageInfo_FightResponse_Fail.Size(m)
-}
-func (m *FightResponse_Fail) XXX_DiscardUnknown() {
-	xxx_messageInfo_FightResponse_Fail.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_FightResponse_Fail proto.InternalMessageInfo
-
-type FightResponse_Success struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *FightResponse_Success) Reset()         { *m = FightResponse_Success{} }
-func (m *FightResponse_Success) String() string { return proto.CompactTextString(m) }
-func (*FightResponse_Success) ProtoMessage()    {}
-func (*FightResponse_Success) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0a9b36907fd4a279, []int{2, 1}
-}
-
-func (m *FightResponse_Success) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FightResponse_Success.Unmarshal(m, b)
-}
-func (m *FightResponse_Success) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FightResponse_Success.Marshal(b, m, deterministic)
-}
-func (m *FightResponse_Success) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FightResponse_Success.Merge(m, src)
-}
-func (m *FightResponse_Success) XXX_Size() int {
-	return xxx_messageInfo_FightResponse_Success.Size(m)
-}
-func (m *FightResponse_Success) XXX_DiscardUnknown() {
-	xxx_messageInfo_FightResponse_Success.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_FightResponse_Success proto.InternalMessageInfo
-
-type FightResponse_CurrentStatus struct {
-	HeroHp               uint32   `protobuf:"varint,1,opt,name=hero_hp,json=heroHp,proto3" json:"hero_hp,omitempty"`
-	BossHp               uint32   `protobuf:"varint,2,opt,name=boss_hp,json=bossHp,proto3" json:"boss_hp,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *FightResponse_CurrentStatus) Reset()         { *m = FightResponse_CurrentStatus{} }
-func (m *FightResponse_CurrentStatus) String() string { return proto.CompactTextString(m) }
-func (*FightResponse_CurrentStatus) ProtoMessage()    {}
-func (*FightResponse_CurrentStatus) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0a9b36907fd4a279, []int{2, 2}
-}
-
-func (m *FightResponse_CurrentStatus) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FightResponse_CurrentStatus.Unmarshal(m, b)
-}
-func (m *FightResponse_CurrentStatus) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FightResponse_CurrentStatus.Marshal(b, m, deterministic)
-}
-func (m *FightResponse_CurrentStatus) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FightResponse_CurrentStatus.Merge(m, src)
-}
-func (m *FightResponse_CurrentStatus) XXX_Size() int {
-	return xxx_messageInfo_FightResponse_CurrentStatus.Size(m)
-}
-func (m *FightResponse_CurrentStatus) XXX_DiscardUnknown() {
-	xxx_messageInfo_FightResponse_CurrentStatus.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_FightResponse_CurrentStatus proto.InternalMessageInfo
-
-func (m *FightResponse_CurrentStatus) GetHeroHp() uint32 {
-	if m != nil {
-		return m.HeroHp
-	}
-	return 0
-}
-
-func (m *FightResponse_CurrentStatus) GetBossHp() uint32 {
-	if m != nil {
-		return m.BossHp
-	}
-	return 0
 }
 
 type ListHerosRequest struct {
@@ -498,7 +812,7 @@ func (m *ListHerosRequest) Reset()         { *m = ListHerosRequest{} }
 func (m *ListHerosRequest) String() string { return proto.CompactTextString(m) }
 func (*ListHerosRequest) ProtoMessage()    {}
 func (*ListHerosRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0a9b36907fd4a279, []int{3}
+	return fileDescriptor_0a9b36907fd4a279, []int{13}
 }
 
 func (m *ListHerosRequest) XXX_Unmarshal(b []byte) error {
@@ -520,22 +834,21 @@ func (m *ListHerosRequest) XXX_DiscardUnknown() {
 var xxx_messageInfo_ListHerosRequest proto.InternalMessageInfo
 
 type Hero struct {
-	Name                 string      `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Age                  uint32      `protobuf:"varint,2,opt,name=age,proto3" json:"age,omitempty"`
-	Gender               Hero_Gender `protobuf:"varint,3,opt,name=gender,proto3,enum=fight.Hero_Gender" json:"gender,omitempty"`
-	Hp                   uint32      `protobuf:"varint,4,opt,name=hp,proto3" json:"hp,omitempty"`
-	AttackPower          int32       `protobuf:"varint,5,opt,name=attack_power,json=attackPower,proto3" json:"attack_power,omitempty"`
-	DefensePower         int32       `protobuf:"varint,6,opt,name=defense_power,json=defensePower,proto3" json:"defense_power,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
-	XXX_unrecognized     []byte      `json:"-"`
-	XXX_sizecache        int32       `json:"-"`
+	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Details              string   `protobuf:"bytes,2,opt,name=details,proto3" json:"details,omitempty"`
+	AttackPower          int32    `protobuf:"varint,3,opt,name=attack_power,json=attackPower,proto3" json:"attack_power,omitempty"`
+	DefensePower         int32    `protobuf:"varint,4,opt,name=defense_power,json=defensePower,proto3" json:"defense_power,omitempty"`
+	Blood                int32    `protobuf:"varint,5,opt,name=blood,proto3" json:"blood,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *Hero) Reset()         { *m = Hero{} }
 func (m *Hero) String() string { return proto.CompactTextString(m) }
 func (*Hero) ProtoMessage()    {}
 func (*Hero) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0a9b36907fd4a279, []int{4}
+	return fileDescriptor_0a9b36907fd4a279, []int{14}
 }
 
 func (m *Hero) XXX_Unmarshal(b []byte) error {
@@ -563,25 +876,11 @@ func (m *Hero) GetName() string {
 	return ""
 }
 
-func (m *Hero) GetAge() uint32 {
+func (m *Hero) GetDetails() string {
 	if m != nil {
-		return m.Age
+		return m.Details
 	}
-	return 0
-}
-
-func (m *Hero) GetGender() Hero_Gender {
-	if m != nil {
-		return m.Gender
-	}
-	return Hero_MALE
-}
-
-func (m *Hero) GetHp() uint32 {
-	if m != nil {
-		return m.Hp
-	}
-	return 0
+	return ""
 }
 
 func (m *Hero) GetAttackPower() int32 {
@@ -598,12 +897,20 @@ func (m *Hero) GetDefensePower() int32 {
 	return 0
 }
 
+func (m *Hero) GetBlood() int32 {
+	if m != nil {
+		return m.Blood
+	}
+	return 0
+}
+
 type Boss struct {
 	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	AttackPower          int32    `protobuf:"varint,2,opt,name=attack_power,json=attackPower,proto3" json:"attack_power,omitempty"`
-	DefensePower         int32    `protobuf:"varint,3,opt,name=defense_power,json=defensePower,proto3" json:"defense_power,omitempty"`
-	Hp                   uint32   `protobuf:"varint,4,opt,name=hp,proto3" json:"hp,omitempty"`
-	Level                uint32   `protobuf:"varint,5,opt,name=level,proto3" json:"level,omitempty"`
+	Details              string   `protobuf:"bytes,2,opt,name=details,proto3" json:"details,omitempty"`
+	AttackPower          int32    `protobuf:"varint,3,opt,name=attack_power,json=attackPower,proto3" json:"attack_power,omitempty"`
+	DefensePower         int32    `protobuf:"varint,4,opt,name=defense_power,json=defensePower,proto3" json:"defense_power,omitempty"`
+	Blood                int32    `protobuf:"varint,5,opt,name=blood,proto3" json:"blood,omitempty"`
+	Level                int32    `protobuf:"varint,6,opt,name=level,proto3" json:"level,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -613,7 +920,7 @@ func (m *Boss) Reset()         { *m = Boss{} }
 func (m *Boss) String() string { return proto.CompactTextString(m) }
 func (*Boss) ProtoMessage()    {}
 func (*Boss) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0a9b36907fd4a279, []int{5}
+	return fileDescriptor_0a9b36907fd4a279, []int{15}
 }
 
 func (m *Boss) XXX_Unmarshal(b []byte) error {
@@ -641,6 +948,13 @@ func (m *Boss) GetName() string {
 	return ""
 }
 
+func (m *Boss) GetDetails() string {
+	if m != nil {
+		return m.Details
+	}
+	return ""
+}
+
 func (m *Boss) GetAttackPower() int32 {
 	if m != nil {
 		return m.AttackPower
@@ -655,150 +969,194 @@ func (m *Boss) GetDefensePower() int32 {
 	return 0
 }
 
-func (m *Boss) GetHp() uint32 {
+func (m *Boss) GetBlood() int32 {
 	if m != nil {
-		return m.Hp
+		return m.Blood
 	}
 	return 0
 }
 
-func (m *Boss) GetLevel() uint32 {
+func (m *Boss) GetLevel() int32 {
 	if m != nil {
 		return m.Level
 	}
 	return 0
 }
 
-type SelectHeroRequest struct {
-	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+type Session struct {
+	UID                  string               `protobuf:"bytes,1,opt,name=UID,proto3" json:"UID,omitempty"`
+	HeroName             string               `protobuf:"bytes,2,opt,name=hero_name,json=heroName,proto3" json:"hero_name,omitempty"`
+	LiveHeroBlood        int32                `protobuf:"varint,3,opt,name=live_hero_blood,json=liveHeroBlood,proto3" json:"live_hero_blood,omitempty"`
+	LiveBossBlood        int32                `protobuf:"varint,4,opt,name=live_boss_blood,json=liveBossBlood,proto3" json:"live_boss_blood,omitempty"`
+	CurrentLevel         int32                `protobuf:"varint,5,opt,name=current_level,json=currentLevel,proto3" json:"current_level,omitempty"`
+	Score                int32                `protobuf:"varint,6,opt,name=score,proto3" json:"score,omitempty"`
+	ArchiveDate          *timestamp.Timestamp `protobuf:"bytes,7,opt,name=archive_date,json=archiveDate,proto3" json:"archive_date,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
-func (m *SelectHeroRequest) Reset()         { *m = SelectHeroRequest{} }
-func (m *SelectHeroRequest) String() string { return proto.CompactTextString(m) }
-func (*SelectHeroRequest) ProtoMessage()    {}
-func (*SelectHeroRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0a9b36907fd4a279, []int{6}
+func (m *Session) Reset()         { *m = Session{} }
+func (m *Session) String() string { return proto.CompactTextString(m) }
+func (*Session) ProtoMessage()    {}
+func (*Session) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0a9b36907fd4a279, []int{16}
 }
 
-func (m *SelectHeroRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_SelectHeroRequest.Unmarshal(m, b)
+func (m *Session) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Session.Unmarshal(m, b)
 }
-func (m *SelectHeroRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_SelectHeroRequest.Marshal(b, m, deterministic)
+func (m *Session) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Session.Marshal(b, m, deterministic)
 }
-func (m *SelectHeroRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SelectHeroRequest.Merge(m, src)
+func (m *Session) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Session.Merge(m, src)
 }
-func (m *SelectHeroRequest) XXX_Size() int {
-	return xxx_messageInfo_SelectHeroRequest.Size(m)
+func (m *Session) XXX_Size() int {
+	return xxx_messageInfo_Session.Size(m)
 }
-func (m *SelectHeroRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_SelectHeroRequest.DiscardUnknown(m)
+func (m *Session) XXX_DiscardUnknown() {
+	xxx_messageInfo_Session.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_SelectHeroRequest proto.InternalMessageInfo
+var xxx_messageInfo_Session proto.InternalMessageInfo
 
-func (m *SelectHeroRequest) GetName() string {
+func (m *Session) GetUID() string {
 	if m != nil {
-		return m.Name
+		return m.UID
 	}
 	return ""
 }
 
-type SelectHeroResponse struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+func (m *Session) GetHeroName() string {
+	if m != nil {
+		return m.HeroName
+	}
+	return ""
 }
 
-func (m *SelectHeroResponse) Reset()         { *m = SelectHeroResponse{} }
-func (m *SelectHeroResponse) String() string { return proto.CompactTextString(m) }
-func (*SelectHeroResponse) ProtoMessage()    {}
-func (*SelectHeroResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0a9b36907fd4a279, []int{7}
+func (m *Session) GetLiveHeroBlood() int32 {
+	if m != nil {
+		return m.LiveHeroBlood
+	}
+	return 0
 }
 
-func (m *SelectHeroResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_SelectHeroResponse.Unmarshal(m, b)
-}
-func (m *SelectHeroResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_SelectHeroResponse.Marshal(b, m, deterministic)
-}
-func (m *SelectHeroResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SelectHeroResponse.Merge(m, src)
-}
-func (m *SelectHeroResponse) XXX_Size() int {
-	return xxx_messageInfo_SelectHeroResponse.Size(m)
-}
-func (m *SelectHeroResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_SelectHeroResponse.DiscardUnknown(m)
+func (m *Session) GetLiveBossBlood() int32 {
+	if m != nil {
+		return m.LiveBossBlood
+	}
+	return 0
 }
 
-var xxx_messageInfo_SelectHeroResponse proto.InternalMessageInfo
+func (m *Session) GetCurrentLevel() int32 {
+	if m != nil {
+		return m.CurrentLevel
+	}
+	return 0
+}
+
+func (m *Session) GetScore() int32 {
+	if m != nil {
+		return m.Score
+	}
+	return 0
+}
+
+func (m *Session) GetArchiveDate() *timestamp.Timestamp {
+	if m != nil {
+		return m.ArchiveDate
+	}
+	return nil
+}
 
 func init() {
-	proto.RegisterEnum("fight.Hero_Gender", Hero_Gender_name, Hero_Gender_value)
-	proto.RegisterType((*ListBossesRequest)(nil), "fight.ListBossesRequest")
-	proto.RegisterType((*FightRequest)(nil), "fight.FightRequest")
-	proto.RegisterType((*FightRequest_Archive)(nil), "fight.FightRequest.Archive")
-	proto.RegisterType((*FightRequest_Start)(nil), "fight.FightRequest.Start")
-	proto.RegisterType((*FightRequest_Fight)(nil), "fight.FightRequest.Fight")
-	proto.RegisterType((*FightResponse)(nil), "fight.FightResponse")
-	proto.RegisterType((*FightResponse_Fail)(nil), "fight.FightResponse.Fail")
-	proto.RegisterType((*FightResponse_Success)(nil), "fight.FightResponse.Success")
-	proto.RegisterType((*FightResponse_CurrentStatus)(nil), "fight.FightResponse.CurrentStatus")
+	proto.RegisterEnum("fight.Type", Type_name, Type_value)
+	proto.RegisterEnum("fight.AdminRequest_Type", AdminRequest_Type_name, AdminRequest_Type_value)
+	proto.RegisterType((*AdminRequest)(nil), "fight.AdminRequest")
+	proto.RegisterType((*AdminResponse)(nil), "fight.AdminResponse")
+	proto.RegisterType((*Top10Request)(nil), "fight.Top10Request")
+	proto.RegisterType((*Top10Response)(nil), "fight.Top10Response")
+	proto.RegisterType((*Top10Response_Player)(nil), "fight.Top10Response.Player")
+	proto.RegisterType((*GameRequest)(nil), "fight.GameRequest")
+	proto.RegisterType((*GameResponse)(nil), "fight.GameResponse")
+	proto.RegisterType((*Fight)(nil), "fight.Fight")
+	proto.RegisterType((*Archive)(nil), "fight.Archive")
+	proto.RegisterType((*Level)(nil), "fight.Level")
+	proto.RegisterType((*Quit)(nil), "fight.Quit")
+	proto.RegisterType((*SelectHeroRequest)(nil), "fight.SelectHeroRequest")
+	proto.RegisterType((*LoadSessionRequest)(nil), "fight.LoadSessionRequest")
+	proto.RegisterType((*SessionView)(nil), "fight.SessionView")
 	proto.RegisterType((*ListHerosRequest)(nil), "fight.ListHerosRequest")
 	proto.RegisterType((*Hero)(nil), "fight.Hero")
 	proto.RegisterType((*Boss)(nil), "fight.Boss")
-	proto.RegisterType((*SelectHeroRequest)(nil), "fight.SelectHeroRequest")
-	proto.RegisterType((*SelectHeroResponse)(nil), "fight.SelectHeroResponse")
+	proto.RegisterType((*Session)(nil), "fight.Session")
 }
 
 func init() { proto.RegisterFile("fight.proto", fileDescriptor_0a9b36907fd4a279) }
 
 var fileDescriptor_0a9b36907fd4a279 = []byte{
-	// 599 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x54, 0xdd, 0x6e, 0xd3, 0x4c,
-	0x10, 0x8d, 0x5d, 0xff, 0x34, 0x93, 0xba, 0x6a, 0xa7, 0x95, 0xea, 0xfa, 0xfb, 0x04, 0xc5, 0x5c,
-	0x10, 0x71, 0x61, 0x4a, 0x0a, 0x02, 0x89, 0xab, 0x04, 0x35, 0x18, 0x51, 0x24, 0xb4, 0xb9, 0xe3,
-	0x26, 0x72, 0xdd, 0x4d, 0x6c, 0x11, 0x6c, 0xe3, 0xdd, 0x94, 0x57, 0xe0, 0x09, 0x78, 0x05, 0x5e,
-	0x87, 0x07, 0xe1, 0x21, 0xd0, 0xfe, 0x24, 0x35, 0x89, 0x91, 0xb8, 0xdb, 0x9d, 0x73, 0x66, 0xe6,
-	0xec, 0xd9, 0xd9, 0x85, 0xde, 0x2c, 0x9f, 0x67, 0x3c, 0xaa, 0xea, 0x92, 0x97, 0x68, 0xcb, 0x4d,
-	0x78, 0x04, 0x87, 0x57, 0x39, 0xe3, 0xa3, 0x92, 0x31, 0xca, 0x08, 0xfd, 0xb2, 0xa4, 0x8c, 0x87,
-	0xdf, 0x4d, 0xd8, 0x1b, 0x0b, 0x58, 0x07, 0xf0, 0x05, 0xb8, 0x49, 0x9d, 0x66, 0xf9, 0x2d, 0xf5,
-	0x8d, 0x33, 0xa3, 0xdf, 0x1b, 0xfc, 0x17, 0xa9, 0x5a, 0x4d, 0x56, 0x34, 0x54, 0x94, 0xb8, 0x43,
-	0x56, 0x6c, 0x7c, 0x0a, 0x36, 0xe3, 0x49, 0xcd, 0x7d, 0x53, 0xa6, 0x9d, 0xb6, 0xa5, 0x4d, 0x04,
-	0x21, 0xee, 0x10, 0xc5, 0x14, 0x29, 0x92, 0xe4, 0xef, 0xfc, 0x3d, 0x45, 0x6e, 0x44, 0x8a, 0xc4,
-	0x82, 0x2e, 0xb8, 0xba, 0x77, 0xf0, 0x16, 0x6c, 0x59, 0x0f, 0xef, 0x83, 0x95, 0xd1, 0xba, 0xd4,
-	0x7a, 0x7b, 0xba, 0x4a, 0x4c, 0xeb, 0x92, 0x48, 0x40, 0x10, 0xae, 0x4b, 0xc6, 0xb4, 0xb2, 0x15,
-	0x41, 0x18, 0x41, 0x24, 0x10, 0xb8, 0x60, 0xcb, 0x3e, 0xa3, 0x5d, 0x70, 0x92, 0x94, 0xe7, 0x65,
-	0x11, 0xfe, 0x30, 0xc1, 0xd3, 0x42, 0x58, 0x55, 0x16, 0x8c, 0xe2, 0x13, 0xb0, 0x66, 0x49, 0xbe,
-	0xd0, 0x6d, 0x36, 0xc4, 0x2a, 0x4e, 0x34, 0x4e, 0xf2, 0x45, 0xdc, 0x21, 0x92, 0x88, 0x2f, 0xc1,
-	0x65, 0xcb, 0x34, 0xa5, 0xeb, 0xce, 0xff, 0xb7, 0xe6, 0x4c, 0x14, 0x47, 0x78, 0xa9, 0xe9, 0xf8,
-	0x0e, 0xf6, 0xd3, 0x65, 0x5d, 0xd3, 0x82, 0x4f, 0x19, 0x4f, 0xf8, 0x92, 0x69, 0x87, 0xc2, 0xd6,
-	0x02, 0xaf, 0x15, 0x75, 0x22, 0x99, 0x71, 0x87, 0x78, 0x69, 0x33, 0x10, 0x38, 0x60, 0x09, 0x59,
-	0xc2, 0x3a, 0xdd, 0x2a, 0x18, 0x82, 0xf7, 0x47, 0x12, 0x9e, 0x80, 0x2b, 0x9c, 0x9a, 0x66, 0x95,
-	0x3c, 0x9e, 0x47, 0x1c, 0xb1, 0x8d, 0x2b, 0x01, 0x08, 0x87, 0x04, 0x60, 0x2a, 0x40, 0x6c, 0xe3,
-	0xaa, 0xe1, 0x14, 0xc2, 0x81, 0x98, 0x2b, 0xe1, 0xf7, 0x7a, 0xac, 0x7e, 0x1a, 0x60, 0x89, 0x00,
-	0x22, 0x58, 0x45, 0xf2, 0x59, 0xcd, 0x52, 0x97, 0xc8, 0x35, 0x1e, 0xc0, 0x4e, 0x32, 0xa7, 0xba,
-	0x9e, 0x58, 0xe2, 0x63, 0x70, 0xe6, 0xb4, 0xb8, 0xa1, 0xb5, 0x3c, 0xe7, 0xfe, 0x00, 0x1b, 0x77,
-	0x18, 0xbd, 0x91, 0x08, 0xd1, 0x0c, 0xdc, 0x07, 0x33, 0xab, 0x7c, 0x4b, 0x26, 0x9b, 0x59, 0x85,
-	0x0f, 0x60, 0x2f, 0xe1, 0x3c, 0x49, 0x3f, 0x4d, 0xab, 0xf2, 0x2b, 0xad, 0x7d, 0xfb, 0xcc, 0xe8,
-	0xdb, 0xa4, 0xa7, 0x62, 0x1f, 0x44, 0x08, 0x1f, 0x82, 0x77, 0x43, 0x67, 0xb4, 0x60, 0x54, 0x73,
-	0x1c, 0xc9, 0xd9, 0xd3, 0x41, 0x49, 0x0a, 0xef, 0x81, 0xa3, 0x3a, 0xe1, 0x2e, 0x58, 0xef, 0x87,
-	0x57, 0x97, 0x07, 0x1d, 0x04, 0x70, 0xc6, 0x97, 0x72, 0x6d, 0x84, 0xdf, 0x0c, 0xb0, 0xc4, 0xc8,
-	0xb4, 0x1e, 0x69, 0x53, 0x84, 0xf9, 0x0f, 0x22, 0x76, 0xb6, 0x45, 0x6c, 0x1d, 0xee, 0x18, 0xec,
-	0x05, 0xbd, 0xa5, 0x0b, 0x79, 0x2a, 0x8f, 0xa8, 0x4d, 0xf8, 0x08, 0x0e, 0x27, 0x74, 0x41, 0x53,
-	0xe9, 0xf9, 0xea, 0xe1, 0xb6, 0xc8, 0x0a, 0x8f, 0x01, 0x9b, 0x44, 0x35, 0x2f, 0x83, 0x5f, 0x86,
-	0x1e, 0x77, 0xbc, 0x80, 0xee, 0xfa, 0xea, 0xf0, 0x44, 0x9b, 0xbe, 0x79, 0x99, 0x41, 0xf3, 0x45,
-	0x9d, 0x1b, 0x38, 0x04, 0xb8, 0x2b, 0x8a, 0xbe, 0x06, 0xb7, 0x04, 0x05, 0xa7, 0x2d, 0x88, 0x7e,
-	0x4a, 0xcf, 0x01, 0xee, 0xbe, 0xa2, 0x75, 0x89, 0xad, 0xdf, 0x29, 0x68, 0x3e, 0xd5, 0x73, 0x03,
-	0x9f, 0xad, 0x74, 0x1f, 0xb5, 0xfc, 0x14, 0xc1, 0x71, 0xdb, 0xe3, 0xe8, 0x1b, 0xa3, 0xee, 0x47,
-	0x37, 0x7a, 0x25, 0xa1, 0x6b, 0x47, 0x7e, 0x88, 0x17, 0xbf, 0x03, 0x00, 0x00, 0xff, 0xff, 0xa1,
-	0x2a, 0x90, 0x28, 0x1f, 0x05, 0x00, 0x00,
+	// 957 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x56, 0xcd, 0x6e, 0x22, 0x47,
+	0x10, 0x76, 0xc3, 0x8c, 0x07, 0x6a, 0xb0, 0x97, 0xf4, 0x5a, 0xca, 0x04, 0x6b, 0xb5, 0xf6, 0x64,
+	0x15, 0xa1, 0x55, 0x84, 0x1d, 0x9c, 0xe4, 0xb0, 0xf9, 0x51, 0x8c, 0x61, 0x17, 0x22, 0x94, 0xdd,
+	0x1d, 0x63, 0x1f, 0x72, 0x41, 0x63, 0xa6, 0x8c, 0x47, 0x19, 0x68, 0x76, 0x7a, 0x60, 0xe3, 0x6b,
+	0x6e, 0x91, 0x72, 0xca, 0x25, 0xaf, 0x90, 0xf7, 0xc9, 0x25, 0x8f, 0x13, 0xf5, 0x1f, 0x0c, 0xd8,
+	0x72, 0x72, 0xcc, 0x05, 0x4d, 0x7f, 0xf5, 0x75, 0x75, 0x55, 0x75, 0x7d, 0x5d, 0x80, 0x7b, 0x1d,
+	0x8f, 0x6f, 0xb2, 0xc6, 0x2c, 0x65, 0x19, 0xa3, 0xb6, 0x5c, 0xd4, 0x9e, 0x8e, 0x19, 0x1b, 0x27,
+	0x78, 0x24, 0xc1, 0xab, 0xf9, 0xf5, 0x51, 0x16, 0x4f, 0x90, 0x67, 0xe1, 0x64, 0xa6, 0x78, 0xfe,
+	0xaf, 0x04, 0x2a, 0xa7, 0xd1, 0x24, 0x9e, 0x06, 0xf8, 0x6e, 0x8e, 0x3c, 0xa3, 0x87, 0x60, 0xdf,
+	0x60, 0xca, 0xb8, 0x47, 0x0e, 0x8a, 0x75, 0xb7, 0xe9, 0x36, 0x94, 0xd7, 0x2e, 0xa6, 0x2c, 0x50,
+	0x16, 0xfa, 0x29, 0x58, 0xd9, 0xed, 0x0c, 0xbd, 0xc2, 0x01, 0xa9, 0xef, 0x36, 0x3d, 0xcd, 0xc8,
+	0x7b, 0x69, 0x0c, 0x6e, 0x67, 0x18, 0x48, 0x96, 0x5f, 0x07, 0x4b, 0xac, 0xe8, 0x23, 0x70, 0xcf,
+	0x82, 0xce, 0xe9, 0xa0, 0x33, 0xec, 0x76, 0x82, 0xd7, 0xd5, 0x2d, 0x01, 0x9c, 0xb6, 0xbf, 0xbf,
+	0x38, 0x1f, 0x28, 0x80, 0xf8, 0x4d, 0xd8, 0xd1, 0x4e, 0xf8, 0x8c, 0x4d, 0x39, 0xfe, 0x87, 0x58,
+	0xfc, 0x5d, 0xa8, 0x0c, 0xd8, 0xec, 0xb3, 0x63, 0x7d, 0xb0, 0xff, 0x1b, 0x81, 0x1d, 0x0d, 0x68,
+	0x27, 0x5f, 0x80, 0x33, 0x4b, 0xc2, 0x5b, 0x4c, 0x8d, 0x9b, 0x7d, 0xed, 0x66, 0x8d, 0xd6, 0x78,
+	0x23, 0x39, 0x81, 0xe1, 0xd6, 0xda, 0xb0, 0xad, 0x20, 0xba, 0x0b, 0x85, 0x38, 0xf2, 0xc8, 0x01,
+	0xa9, 0x97, 0x83, 0x42, 0x1c, 0xd1, 0x3d, 0xb0, 0xf9, 0x88, 0xa5, 0x2a, 0x7f, 0x3b, 0x50, 0x0b,
+	0x81, 0x26, 0xb8, 0xc0, 0xc4, 0x2b, 0x2a, 0x54, 0x2e, 0xfc, 0x6f, 0xc1, 0x7d, 0x15, 0x4e, 0xd0,
+	0x14, 0xf7, 0xa9, 0xae, 0x1c, 0x91, 0x95, 0x33, 0xf9, 0xac, 0x8a, 0xa5, 0xcf, 0x2a, 0x98, 0xb3,
+	0xfc, 0xbf, 0x08, 0x54, 0x94, 0x03, 0x9d, 0xcd, 0xbf, 0x7a, 0x78, 0x06, 0xea, 0xea, 0xa5, 0x13,
+	0xb7, 0x59, 0xd1, 0x8c, 0x97, 0xe2, 0xb7, 0xbb, 0x15, 0x28, 0x23, 0x7d, 0x0e, 0x4e, 0x98, 0x8e,
+	0x6e, 0xe2, 0x05, 0xca, 0x78, 0xdd, 0xe6, 0xae, 0xb9, 0x45, 0x85, 0x76, 0xb7, 0x02, 0x43, 0x10,
+	0x1e, 0x55, 0x66, 0xd6, 0x9a, 0xc7, 0xbe, 0xc0, 0x84, 0x47, 0x69, 0xa4, 0x87, 0x60, 0xbd, 0x9b,
+	0xc7, 0x99, 0x67, 0x4b, 0x92, 0x09, 0xec, 0xed, 0x3c, 0x16, 0xa7, 0x4a, 0x53, 0xcb, 0x01, 0x7b,
+	0x11, 0x26, 0x73, 0xf4, 0xff, 0x20, 0x60, 0xcb, 0x80, 0xe8, 0x3e, 0x94, 0xc7, 0xe1, 0x04, 0x87,
+	0x6c, 0x81, 0xa9, 0xcc, 0xa9, 0x14, 0x94, 0x04, 0xf0, 0x7a, 0x81, 0x29, 0x7d, 0x02, 0x30, 0xc5,
+	0x9f, 0xb3, 0xa1, 0x3a, 0xbd, 0x20, 0xad, 0x65, 0x81, 0xc8, 0xa3, 0x57, 0xf7, 0x50, 0xcc, 0xdf,
+	0xc3, 0x13, 0x00, 0xd1, 0x19, 0xc3, 0xab, 0x84, 0xb1, 0x48, 0x86, 0x6c, 0x07, 0x65, 0x81, 0xb4,
+	0x04, 0x20, 0xcc, 0x57, 0x8c, 0x73, 0x6d, 0xb6, 0x95, 0x59, 0x20, 0xd2, 0xec, 0xbf, 0x00, 0x47,
+	0x57, 0x80, 0x56, 0xa1, 0x38, 0xe1, 0x63, 0x7d, 0xef, 0xe2, 0x53, 0xec, 0xe5, 0xc8, 0x79, 0xcc,
+	0xa6, 0xc3, 0xe5, 0x25, 0x95, 0x35, 0xd2, 0x8b, 0xfc, 0x33, 0xb0, 0x55, 0x60, 0x77, 0x77, 0xd6,
+	0xc1, 0xd1, 0x3c, 0x7d, 0x2d, 0xa6, 0xdc, 0xe7, 0x0a, 0x0d, 0x8c, 0xd9, 0xf7, 0xc0, 0x12, 0x35,
+	0xbb, 0xeb, 0xc3, 0xff, 0x0e, 0x3e, 0x38, 0xc7, 0x04, 0x47, 0x99, 0x6c, 0x7f, 0xdd, 0x50, 0x9b,
+	0xbd, 0xb9, 0x0f, 0x32, 0xd7, 0xe1, 0x34, 0x9c, 0xa0, 0x8e, 0xb0, 0x24, 0x80, 0x1f, 0xc2, 0x09,
+	0xfa, 0xcf, 0x80, 0xf6, 0x59, 0x18, 0x99, 0x33, 0xef, 0x77, 0xe1, 0xdf, 0x82, 0xab, 0x19, 0x97,
+	0x31, 0xbe, 0x17, 0x0d, 0x27, 0x1c, 0x48, 0xc2, 0x86, 0x04, 0xa5, 0x41, 0x10, 0x44, 0xfd, 0x74,
+	0x62, 0x86, 0xd0, 0x62, 0x9c, 0x07, 0xd2, 0x90, 0x4f, 0xbe, 0xf8, 0x70, 0xf2, 0x14, 0xaa, 0xfd,
+	0x98, 0xcb, 0x04, 0xb9, 0x11, 0xf4, 0xef, 0x04, 0x2c, 0x01, 0x50, 0x0a, 0x96, 0xcc, 0x4a, 0x45,
+	0x2a, 0xbf, 0xa9, 0x07, 0x4e, 0x84, 0x59, 0x18, 0x27, 0x5c, 0x27, 0x6b, 0x96, 0xf4, 0x10, 0x2a,
+	0x61, 0x96, 0x85, 0xa3, 0x9f, 0x86, 0x33, 0xf6, 0x1e, 0x53, 0xdd, 0x23, 0xae, 0xc2, 0xde, 0x08,
+	0x88, 0x7e, 0x0c, 0x3b, 0x11, 0x5e, 0xe3, 0x94, 0xa3, 0xe6, 0xa8, 0x66, 0xa9, 0x68, 0x50, 0x91,
+	0xf6, 0xc0, 0xce, 0xb7, 0x8a, 0x5a, 0xf8, 0x7f, 0x12, 0xb0, 0x44, 0x86, 0xff, 0xa7, 0xa0, 0x56,
+	0x2f, 0xd0, 0x76, 0xfe, 0x05, 0xfa, 0xa5, 0x00, 0x8e, 0x2e, 0xb4, 0x68, 0xaa, 0x8b, 0x5e, 0xdb,
+	0x34, 0xd5, 0x45, 0xaf, 0xfd, 0x60, 0xbf, 0xd0, 0x4f, 0xe0, 0x51, 0x12, 0x2f, 0x70, 0x98, 0xd3,
+	0x93, 0x8a, 0x78, 0x47, 0xc0, 0xdd, 0xa5, 0xa6, 0x0c, 0x2f, 0x27, 0x2c, 0x6b, 0xc5, 0x6b, 0x19,
+	0x71, 0x89, 0xdc, 0x46, 0xf3, 0x34, 0xc5, 0xa9, 0x91, 0xb4, 0x0a, 0xbf, 0xa2, 0xc1, 0x0d, 0x55,
+	0x6f, 0xe7, 0x55, 0xfd, 0x0d, 0x54, 0xf4, 0x73, 0x34, 0x8c, 0xc2, 0x0c, 0x3d, 0x47, 0x36, 0x52,
+	0xad, 0xa1, 0xc6, 0x5b, 0xc3, 0x8c, 0xb7, 0xc6, 0xc0, 0x8c, 0xb7, 0xc0, 0xd5, 0xfc, 0x76, 0x98,
+	0xe1, 0xf3, 0x13, 0x3d, 0x83, 0xca, 0x60, 0xbf, 0xec, 0xbd, 0xea, 0x0e, 0xaa, 0x5b, 0xd4, 0x05,
+	0xe7, 0x34, 0x38, 0xeb, 0xf6, 0x2e, 0x3b, 0x55, 0x22, 0xf0, 0x7e, 0xe7, 0xb2, 0xd3, 0xaf, 0x16,
+	0x68, 0x09, 0xac, 0xb7, 0x17, 0xbd, 0x41, 0xb5, 0xd8, 0xfc, 0xbb, 0x00, 0x25, 0xf9, 0x4a, 0x9d,
+	0x2f, 0x46, 0xf4, 0x04, 0xca, 0xcb, 0xd6, 0xa4, 0x1f, 0x9a, 0x27, 0x70, 0xa3, 0x59, 0x6b, 0x79,
+	0x79, 0x1c, 0x13, 0xfa, 0x35, 0xb8, 0x39, 0xc1, 0xd1, 0x8f, 0xcc, 0xb6, 0x3b, 0x22, 0xac, 0xd1,
+	0x75, 0x49, 0x48, 0xe5, 0xbd, 0x00, 0x58, 0x09, 0x9e, 0x7a, 0x4b, 0xc6, 0xc6, 0x1b, 0x70, 0xef,
+	0xde, 0x23, 0xb0, 0xc4, 0xd8, 0xa0, 0xc6, 0x96, 0x1b, 0x42, 0xb5, 0xc7, 0x6b, 0x98, 0x9e, 0x2b,
+	0x9f, 0x83, 0x2d, 0xe7, 0x21, 0x7d, 0xbc, 0x3e, 0x1d, 0xd5, 0x96, 0xbd, 0xfb, 0x46, 0xe6, 0x31,
+	0xa1, 0x5f, 0x82, 0x2d, 0x27, 0xf6, 0x72, 0x57, 0xfe, 0x4f, 0xc0, 0x72, 0xd7, 0xda, 0x50, 0xaf,
+	0x93, 0x63, 0xd2, 0x2a, 0xff, 0xe8, 0x34, 0xbe, 0x92, 0xc6, 0xab, 0x6d, 0x79, 0x77, 0x27, 0xff,
+	0x04, 0x00, 0x00, 0xff, 0xff, 0x36, 0x13, 0xb3, 0x28, 0xbe, 0x08, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -809,30 +1167,34 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// FightClient is the client API for Fight service.
+// FightSvcClient is the client API for FightSvc service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
-type FightClient interface {
-	ListHeros(ctx context.Context, in *ListHerosRequest, opts ...grpc.CallOption) (Fight_ListHerosClient, error)
-	SelectHero(ctx context.Context, in *SelectHeroRequest, opts ...grpc.CallOption) (*SelectHeroResponse, error)
-	ListBosses(ctx context.Context, in *ListBossesRequest, opts ...grpc.CallOption) (Fight_ListBossesClient, error)
-	Fight(ctx context.Context, opts ...grpc.CallOption) (Fight_FightClient, error)
+type FightSvcClient interface {
+	// here stream is used to trans a big mount of data.
+	ListHeros(ctx context.Context, in *ListHerosRequest, opts ...grpc.CallOption) (FightSvc_ListHerosClient, error)
+	LoadSession(ctx context.Context, in *LoadSessionRequest, opts ...grpc.CallOption) (*SessionView, error)
+	SelectHero(ctx context.Context, in *SelectHeroRequest, opts ...grpc.CallOption) (*SessionView, error)
+	Game(ctx context.Context, in *GameRequest, opts ...grpc.CallOption) (*GameResponse, error)
+	// here stream is used to keep the long-alive connection and get real top10
+	Top10(ctx context.Context, in *Top10Request, opts ...grpc.CallOption) (FightSvc_Top10Client, error)
+	Admin(ctx context.Context, opts ...grpc.CallOption) (FightSvc_AdminClient, error)
 }
 
-type fightClient struct {
+type fightSvcClient struct {
 	cc *grpc.ClientConn
 }
 
-func NewFightClient(cc *grpc.ClientConn) FightClient {
-	return &fightClient{cc}
+func NewFightSvcClient(cc *grpc.ClientConn) FightSvcClient {
+	return &fightSvcClient{cc}
 }
 
-func (c *fightClient) ListHeros(ctx context.Context, in *ListHerosRequest, opts ...grpc.CallOption) (Fight_ListHerosClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Fight_serviceDesc.Streams[0], "/fight.Fight/ListHeros", opts...)
+func (c *fightSvcClient) ListHeros(ctx context.Context, in *ListHerosRequest, opts ...grpc.CallOption) (FightSvc_ListHerosClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_FightSvc_serviceDesc.Streams[0], "/fight.FightSvc/ListHeros", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &fightListHerosClient{stream}
+	x := &fightSvcListHerosClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -842,16 +1204,16 @@ func (c *fightClient) ListHeros(ctx context.Context, in *ListHerosRequest, opts 
 	return x, nil
 }
 
-type Fight_ListHerosClient interface {
+type FightSvc_ListHerosClient interface {
 	Recv() (*Hero, error)
 	grpc.ClientStream
 }
 
-type fightListHerosClient struct {
+type fightSvcListHerosClient struct {
 	grpc.ClientStream
 }
 
-func (x *fightListHerosClient) Recv() (*Hero, error) {
+func (x *fightSvcListHerosClient) Recv() (*Hero, error) {
 	m := new(Hero)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -859,21 +1221,39 @@ func (x *fightListHerosClient) Recv() (*Hero, error) {
 	return m, nil
 }
 
-func (c *fightClient) SelectHero(ctx context.Context, in *SelectHeroRequest, opts ...grpc.CallOption) (*SelectHeroResponse, error) {
-	out := new(SelectHeroResponse)
-	err := c.cc.Invoke(ctx, "/fight.Fight/SelectHero", in, out, opts...)
+func (c *fightSvcClient) LoadSession(ctx context.Context, in *LoadSessionRequest, opts ...grpc.CallOption) (*SessionView, error) {
+	out := new(SessionView)
+	err := c.cc.Invoke(ctx, "/fight.FightSvc/LoadSession", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *fightClient) ListBosses(ctx context.Context, in *ListBossesRequest, opts ...grpc.CallOption) (Fight_ListBossesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Fight_serviceDesc.Streams[1], "/fight.Fight/ListBosses", opts...)
+func (c *fightSvcClient) SelectHero(ctx context.Context, in *SelectHeroRequest, opts ...grpc.CallOption) (*SessionView, error) {
+	out := new(SessionView)
+	err := c.cc.Invoke(ctx, "/fight.FightSvc/SelectHero", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &fightListBossesClient{stream}
+	return out, nil
+}
+
+func (c *fightSvcClient) Game(ctx context.Context, in *GameRequest, opts ...grpc.CallOption) (*GameResponse, error) {
+	out := new(GameResponse)
+	err := c.cc.Invoke(ctx, "/fight.FightSvc/Game", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *fightSvcClient) Top10(ctx context.Context, in *Top10Request, opts ...grpc.CallOption) (FightSvc_Top10Client, error) {
+	stream, err := c.cc.NewStream(ctx, &_FightSvc_serviceDesc.Streams[1], "/fight.FightSvc/Top10", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &fightSvcTop10Client{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -883,195 +1263,247 @@ func (c *fightClient) ListBosses(ctx context.Context, in *ListBossesRequest, opt
 	return x, nil
 }
 
-type Fight_ListBossesClient interface {
-	Recv() (*Boss, error)
+type FightSvc_Top10Client interface {
+	Recv() (*Top10Response, error)
 	grpc.ClientStream
 }
 
-type fightListBossesClient struct {
+type fightSvcTop10Client struct {
 	grpc.ClientStream
 }
 
-func (x *fightListBossesClient) Recv() (*Boss, error) {
-	m := new(Boss)
+func (x *fightSvcTop10Client) Recv() (*Top10Response, error) {
+	m := new(Top10Response)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *fightClient) Fight(ctx context.Context, opts ...grpc.CallOption) (Fight_FightClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Fight_serviceDesc.Streams[2], "/fight.Fight/Fight", opts...)
+func (c *fightSvcClient) Admin(ctx context.Context, opts ...grpc.CallOption) (FightSvc_AdminClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_FightSvc_serviceDesc.Streams[2], "/fight.FightSvc/Admin", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &fightFightClient{stream}
+	x := &fightSvcAdminClient{stream}
 	return x, nil
 }
 
-type Fight_FightClient interface {
-	Send(*FightRequest) error
-	CloseAndRecv() (*FightResponse, error)
+type FightSvc_AdminClient interface {
+	Send(*AdminRequest) error
+	Recv() (*AdminResponse, error)
 	grpc.ClientStream
 }
 
-type fightFightClient struct {
+type fightSvcAdminClient struct {
 	grpc.ClientStream
 }
 
-func (x *fightFightClient) Send(m *FightRequest) error {
+func (x *fightSvcAdminClient) Send(m *AdminRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *fightFightClient) CloseAndRecv() (*FightResponse, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(FightResponse)
+func (x *fightSvcAdminClient) Recv() (*AdminResponse, error) {
+	m := new(AdminResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-// FightServer is the server API for Fight service.
-type FightServer interface {
-	ListHeros(*ListHerosRequest, Fight_ListHerosServer) error
-	SelectHero(context.Context, *SelectHeroRequest) (*SelectHeroResponse, error)
-	ListBosses(*ListBossesRequest, Fight_ListBossesServer) error
-	Fight(Fight_FightServer) error
+// FightSvcServer is the server API for FightSvc service.
+type FightSvcServer interface {
+	// here stream is used to trans a big mount of data.
+	ListHeros(*ListHerosRequest, FightSvc_ListHerosServer) error
+	LoadSession(context.Context, *LoadSessionRequest) (*SessionView, error)
+	SelectHero(context.Context, *SelectHeroRequest) (*SessionView, error)
+	Game(context.Context, *GameRequest) (*GameResponse, error)
+	// here stream is used to keep the long-alive connection and get real top10
+	Top10(*Top10Request, FightSvc_Top10Server) error
+	Admin(FightSvc_AdminServer) error
 }
 
-// UnimplementedFightServer can be embedded to have forward compatible implementations.
-type UnimplementedFightServer struct {
+// UnimplementedFightSvcServer can be embedded to have forward compatible implementations.
+type UnimplementedFightSvcServer struct {
 }
 
-func (*UnimplementedFightServer) ListHeros(req *ListHerosRequest, srv Fight_ListHerosServer) error {
+func (*UnimplementedFightSvcServer) ListHeros(req *ListHerosRequest, srv FightSvc_ListHerosServer) error {
 	return status.Errorf(codes.Unimplemented, "method ListHeros not implemented")
 }
-func (*UnimplementedFightServer) SelectHero(ctx context.Context, req *SelectHeroRequest) (*SelectHeroResponse, error) {
+func (*UnimplementedFightSvcServer) LoadSession(ctx context.Context, req *LoadSessionRequest) (*SessionView, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LoadSession not implemented")
+}
+func (*UnimplementedFightSvcServer) SelectHero(ctx context.Context, req *SelectHeroRequest) (*SessionView, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SelectHero not implemented")
 }
-func (*UnimplementedFightServer) ListBosses(req *ListBossesRequest, srv Fight_ListBossesServer) error {
-	return status.Errorf(codes.Unimplemented, "method ListBosses not implemented")
+func (*UnimplementedFightSvcServer) Game(ctx context.Context, req *GameRequest) (*GameResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Game not implemented")
 }
-func (*UnimplementedFightServer) Fight(srv Fight_FightServer) error {
-	return status.Errorf(codes.Unimplemented, "method Fight not implemented")
+func (*UnimplementedFightSvcServer) Top10(req *Top10Request, srv FightSvc_Top10Server) error {
+	return status.Errorf(codes.Unimplemented, "method Top10 not implemented")
+}
+func (*UnimplementedFightSvcServer) Admin(srv FightSvc_AdminServer) error {
+	return status.Errorf(codes.Unimplemented, "method Admin not implemented")
 }
 
-func RegisterFightServer(s *grpc.Server, srv FightServer) {
-	s.RegisterService(&_Fight_serviceDesc, srv)
+func RegisterFightSvcServer(s *grpc.Server, srv FightSvcServer) {
+	s.RegisterService(&_FightSvc_serviceDesc, srv)
 }
 
-func _Fight_ListHeros_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _FightSvc_ListHeros_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(ListHerosRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(FightServer).ListHeros(m, &fightListHerosServer{stream})
+	return srv.(FightSvcServer).ListHeros(m, &fightSvcListHerosServer{stream})
 }
 
-type Fight_ListHerosServer interface {
+type FightSvc_ListHerosServer interface {
 	Send(*Hero) error
 	grpc.ServerStream
 }
 
-type fightListHerosServer struct {
+type fightSvcListHerosServer struct {
 	grpc.ServerStream
 }
 
-func (x *fightListHerosServer) Send(m *Hero) error {
+func (x *fightSvcListHerosServer) Send(m *Hero) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _Fight_SelectHero_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _FightSvc_LoadSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoadSessionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FightSvcServer).LoadSession(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/fight.FightSvc/LoadSession",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FightSvcServer).LoadSession(ctx, req.(*LoadSessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _FightSvc_SelectHero_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SelectHeroRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(FightServer).SelectHero(ctx, in)
+		return srv.(FightSvcServer).SelectHero(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/fight.Fight/SelectHero",
+		FullMethod: "/fight.FightSvc/SelectHero",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FightServer).SelectHero(ctx, req.(*SelectHeroRequest))
+		return srv.(FightSvcServer).SelectHero(ctx, req.(*SelectHeroRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Fight_ListBosses_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(ListBossesRequest)
+func _FightSvc_Game_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GameRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FightSvcServer).Game(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/fight.FightSvc/Game",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FightSvcServer).Game(ctx, req.(*GameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _FightSvc_Top10_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Top10Request)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(FightServer).ListBosses(m, &fightListBossesServer{stream})
+	return srv.(FightSvcServer).Top10(m, &fightSvcTop10Server{stream})
 }
 
-type Fight_ListBossesServer interface {
-	Send(*Boss) error
+type FightSvc_Top10Server interface {
+	Send(*Top10Response) error
 	grpc.ServerStream
 }
 
-type fightListBossesServer struct {
+type fightSvcTop10Server struct {
 	grpc.ServerStream
 }
 
-func (x *fightListBossesServer) Send(m *Boss) error {
+func (x *fightSvcTop10Server) Send(m *Top10Response) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _Fight_Fight_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(FightServer).Fight(&fightFightServer{stream})
+func _FightSvc_Admin_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(FightSvcServer).Admin(&fightSvcAdminServer{stream})
 }
 
-type Fight_FightServer interface {
-	SendAndClose(*FightResponse) error
-	Recv() (*FightRequest, error)
+type FightSvc_AdminServer interface {
+	Send(*AdminResponse) error
+	Recv() (*AdminRequest, error)
 	grpc.ServerStream
 }
 
-type fightFightServer struct {
+type fightSvcAdminServer struct {
 	grpc.ServerStream
 }
 
-func (x *fightFightServer) SendAndClose(m *FightResponse) error {
+func (x *fightSvcAdminServer) Send(m *AdminResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *fightFightServer) Recv() (*FightRequest, error) {
-	m := new(FightRequest)
+func (x *fightSvcAdminServer) Recv() (*AdminRequest, error) {
+	m := new(AdminRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-var _Fight_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "fight.Fight",
-	HandlerType: (*FightServer)(nil),
+var _FightSvc_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "fight.FightSvc",
+	HandlerType: (*FightSvcServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "LoadSession",
+			Handler:    _FightSvc_LoadSession_Handler,
+		},
+		{
 			MethodName: "SelectHero",
-			Handler:    _Fight_SelectHero_Handler,
+			Handler:    _FightSvc_SelectHero_Handler,
+		},
+		{
+			MethodName: "Game",
+			Handler:    _FightSvc_Game_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "ListHeros",
-			Handler:       _Fight_ListHeros_Handler,
+			Handler:       _FightSvc_ListHeros_Handler,
 			ServerStreams: true,
 		},
 		{
-			StreamName:    "ListBosses",
-			Handler:       _Fight_ListBosses_Handler,
+			StreamName:    "Top10",
+			Handler:       _FightSvc_Top10_Handler,
 			ServerStreams: true,
 		},
 		{
-			StreamName:    "Fight",
-			Handler:       _Fight_Fight_Handler,
+			StreamName:    "Admin",
+			Handler:       _FightSvc_Admin_Handler,
+			ServerStreams: true,
 			ClientStreams: true,
 		},
 	},
